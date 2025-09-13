@@ -304,6 +304,20 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
         'Cannot draw betWeenBarsArea when null spots are inconsistent.',
       );
     }
+    if (betweenBarsData.fromAboveColor != null ||
+        betweenBarsData.fromBelowColor != null) {
+      _drawFromAboveBelowColorBars(
+        fromBarSplitLines,
+        toBarSplitLines,
+        betweenBarsData,
+        viewSize,
+        fromBarData,
+        toBarData,
+        holder,
+        canvasWrapper,
+      );
+      return;
+    }
 
     for (var i = 0; i < fromBarSplitLines.length; i++) {
       final fromSpots = fromBarSplitLines[i];
@@ -343,6 +357,108 @@ class LineChartPainter extends AxisChartPainter<LineChartData> {
         aroundRect,
         holder,
       );
+    }
+  }
+
+  void _drawFromAboveBelowColorBars(
+    List<List<FlSpot>> fromBarSplitLines,
+    List<List<FlSpot>> toBarSplitLines,
+    BetweenBarsData betweenBarsData,
+    Size viewSize,
+    LineChartBarData fromBarData,
+    LineChartBarData toBarData,
+    PaintHolder<LineChartData> holder,
+    CanvasWrapper canvasWrapper,
+  ) {
+    final fromBarList = <List<List<FlSpot>>>[
+      [[]],
+    ];
+    final toBarList = <List<List<FlSpot>>>[
+      [[]],
+    ];
+    for (var i = 0; i < fromBarSplitLines.length; i++) {
+      var isAbove = fromBarSplitLines[i][0].y >= toBarSplitLines[i][0].y;
+      for (var j = 0; j < fromBarSplitLines[i].length; j++) {
+        final fromSpot = fromBarSplitLines[i][j];
+        final toSpot = toBarSplitLines[i][j];
+        if (isAbove) {
+          if (fromSpot.y >= toSpot.y) {
+            fromBarList[i].last.add(fromSpot);
+            toBarList[i].last.add(toSpot);
+          } else {
+            fromBarList[i].add([fromSpot]);
+            toBarList[i].add([toSpot]);
+            isAbove = false;
+          }
+        } else {
+          if (fromSpot.y <= toSpot.y) {
+            fromBarList[i].last.add(fromSpot);
+            toBarList[i].last.add(toSpot);
+          } else {
+            fromBarList[i].add([toSpot]);
+            toBarList[i].add([toSpot]);
+            isAbove = true;
+          }
+        }
+      }
+    }
+    fromBarSplitLines.clear();
+    toBarSplitLines.clear();
+    for (var i = 0; i < fromBarList.length; i++) {
+      for (var j = 0; j < fromBarList[i].length; j++) {
+        if (fromBarList[i][j].isNotEmpty) {
+          fromBarSplitLines.add(fromBarList[i][j]);
+          toBarSplitLines.add(toBarList[i][j]);
+        }
+      }
+    }
+    for (var i = 0; i < fromBarSplitLines.length; i++) {
+      final toSpots = toBarSplitLines[i].reversed.toList();
+      final toBarPath = generateBarPath(
+        viewSize,
+        toBarData,
+        toSpots,
+        holder,
+      );
+      final fromSpots = fromBarSplitLines[i];
+      final fromBarPath = generateBarPath(
+        viewSize,
+        fromBarData,
+        fromSpots,
+        holder,
+        appendToPath: toBarPath,
+      );
+      if (fromBarSplitLines[i].first.y >= toBarSplitLines[i].first.y) {
+        if (betweenBarsData.fromAboveColor != null) {
+          drawAboveBar(
+            canvasWrapper,
+            fromBarPath,
+            toBarPath,
+            holder,
+            fromBarData.copyWith(
+              aboveBarData: BarAreaData(
+                show: true,
+                color: betweenBarsData.fromAboveColor,
+              ),
+            ),
+          );
+        }
+      } else {
+        if (betweenBarsData.fromBelowColor != null) {
+          drawBelowBar(
+            canvasWrapper,
+            fromBarPath,
+            toBarPath,
+            holder,
+            fromBarData.copyWith(
+              belowBarData: BarAreaData(
+                show: true,
+                color: betweenBarsData.fromBelowColor,
+              ),
+            ),
+          );
+        }
+      }
     }
   }
 
