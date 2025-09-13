@@ -148,6 +148,8 @@ class LineChartSample7 extends StatelessWidget {
                 fromIndex: 0,
                 toIndex: 1,
                 color: betweenColor,
+                fromAboveColor: line1Color.withValues(alpha: 0.5),
+                fromBelowColor: line2Color.withValues(alpha: 0.5),
               )
             ],
             minY: 0,
