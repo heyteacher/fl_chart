@@ -618,9 +618,14 @@ class BetweenBarsData with EquatableMixin {
     required this.fromIndex,
     required this.toIndex,
     Color? color,
+    this.fromAboveColor,
+    this.fromBelowColor,
     this.gradient,
   }) : color = color ??
-            ((color == null && gradient == null)
+            ((color == null &&
+                    gradient == null &&
+                    fromAboveColor == null &&
+                    fromBelowColor == null)
                 ? Colors.blueGrey.withValues(alpha: 0.5)
                 : null);
 
@@ -634,6 +639,14 @@ class BetweenBarsData with EquatableMixin {
   /// Otherwise we use  [gradient] to draw the background.
   /// It throws an exception if you provide both [color] and [gradient]
   final Color? color;
+
+  /// If provided, this [BetweenBarsData] draws with this [fromAboveColor] if
+  /// from Y value is grater than to Y value
+  final Color? fromAboveColor;
+
+  /// If provided, this [BetweenBarsData] draws with this [fromBelowColor] if
+  /// to Y value is less than Y from value
+  final Color? fromBelowColor;
 
   /// If provided, this [BetweenBarsData] draws with this [gradient].
   /// Otherwise we use [color] to draw the background.
